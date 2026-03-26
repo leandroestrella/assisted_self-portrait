@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Assisted Self-Portrait</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Loading screen -->
+  <div id="loading-screen">
+    <div class="loading-content">
+      <h1>Assisted Self-Portrait</h1>
+      <p id="loading-status">Searching for images...</p>
+      <div class="loading-bar">
+        <div class="loading-bar-fill" id="loading-bar-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main AR view -->
+  <div id="ar-view" style="display: none;">
+    <div id="zoom-wrapper">
+      <video id="webcam" autoplay playsinline muted></video>
+      <div id="overlay-container"></div>
+    </div>
+  </div>
+
+  <script src="lib/face-api.min.js"></script>
+  <script src="js/imageCropper.js"></script>
+  <script src="js/imageSearch.js"></script>
+  <script src="js/faceTracker.js"></script>
+  <script src="js/overlayManager.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
