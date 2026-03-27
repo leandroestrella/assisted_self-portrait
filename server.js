@@ -128,5 +128,5 @@ app.get('/api/proxy-image', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Assisted Self-Portrait running at http://localhost:${PORT}`);
+  console.log(`assisted_self-portrait running at http://localhost:${PORT}`);
 });

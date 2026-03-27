@@ -3,16 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Assisted Self-Portrait</title>
+  <title>assisted_self-portrait</title>
+  <link rel="icon" href="favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
+  <header>
+    <a href="javascript:;" onclick="location.reload()" id="reload">&#8635;</a>
+    <a href="javascript:;" onclick="toggleInfo()" id="info">&#8505;</a>
+  </header>
+
+  <footer>
+    <a href="https://www.leandroestrella.com" target="_blank" rel="noopener noreferrer" id="sign"><span class="glitch">le</span></a>
+    <a href="javascript:;" onclick="Screenshot.capture()" id="camera">&#128247;</a>
+  </footer>
+
+  <!-- Info panel -->
+  <div id="info-panel" style="display: none;">
+    <div class="info-content">
+      <p class="info-tags"><a href="https://vimeo.com/leandroestrella/assisted-portrait" target="_blank" rel="noopener noreferrer">video performance</a>, ar filter, 16:9, hd, sound, 1:30 minutes, 2014</p>
+      <p class="info-description">creating a self-portrait using images from the web, with the aid of an anonymous search engine composed in a screen-performance on my computer desktop.</p>
+      <div class="info-gif">
+        <div style="width:100%;height:0;padding-bottom:63%;position:relative;">
+          <iframe src="https://giphy.com/embed/3ornjPby6F2oHVkJQA" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Loading screen -->
   <div id="loading-screen">
     <div class="loading-content">
-      <h1>Assisted Self-Portrait</h1>
-      <p id="loading-status">Searching for images...</p>
+      <h1>assisted_self-portrait</h1>
+      <p id="loading-status">searching for images...</p>
       <div class="loading-bar">
         <div class="loading-bar-fill" id="loading-bar-fill"></div>
       </div>
@@ -27,11 +53,25 @@
     </div>
   </div>
 
+  <script>
+    function toggleInfo() {
+      const panel = document.getElementById('info-panel');
+      panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+    }
+    document.addEventListener('click', function(e) {
+      const panel = document.getElementById('info-panel');
+      if (panel.style.display === 'flex' && e.target === panel) {
+        panel.style.display = 'none';
+      }
+    });
+  </script>
+
   <script src="lib/face-api.min.js"></script>
   <script src="js/imageCropper.js"></script>
   <script src="js/imageSearch.js"></script>
   <script src="js/faceTracker.js"></script>
   <script src="js/overlayManager.js"></script>
+  <script src="js/screenshot.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
