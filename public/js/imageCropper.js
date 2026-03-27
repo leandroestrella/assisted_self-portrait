@@ -39,54 +39,36 @@ const ImageCropper = (function () {
       return region;
     },
 
-    leftEar(landmarks, box) {
-      // No ear landmarks — crop region to the LEFT of the face box
-      const earWidth = box.width * 0.35;
-      const earHeight = box.height * 0.45;
-      return {
-        x: box.x - earWidth * 0.8,
-        y: box.y + box.height * 0.15,
-        w: earWidth,
-        h: earHeight
-      };
-    },
+    // No ear landmarks in 68-point model — estimate from face box edges
+    leftEar(landmarks, box) { return earRegion(box, 'left'); },
+    rightEar(landmarks, box) { return earRegion(box, 'right'); },
 
-    rightEar(landmarks, box) {
-      // Region to the RIGHT of the face box
-      const earWidth = box.width * 0.35;
-      const earHeight = box.height * 0.45;
-      return {
-        x: box.x + box.width - earWidth * 0.2,
-        y: box.y + box.height * 0.15,
-        w: earWidth,
-        h: earHeight
-      };
-    },
-
-    leftForehead(landmarks, box) {
-      // Above left eyebrow (17-21), up to top of face box
-      const browRegion = regionFromLandmarks(landmarks, [17,18,19,20,21], 0.2);
-      return {
-        x: browRegion.x - browRegion.w * 0.15,
-        y: box.y,
-        w: browRegion.w * 1.3,
-        h: browRegion.y - box.y + browRegion.h * 0.3
-      };
-    },
-
-    rightForehead(landmarks, box) {
-      // Above right eyebrow (22-26), up to top of face box
-      const browRegion = regionFromLandmarks(landmarks, [22,23,24,25,26], 0.2);
-      return {
-        x: browRegion.x - browRegion.w * 0.15,
-        y: box.y,
-        w: browRegion.w * 1.3,
-        h: browRegion.y - box.y + browRegion.h * 0.3
-      };
-    }
+    // Above eyebrow landmarks, up to top of face box
+    leftForehead(landmarks, box) { return foreheadRegion(landmarks, box, [17,18,19,20,21]); },
+    rightForehead(landmarks, box) { return foreheadRegion(landmarks, box, [22,23,24,25,26]); }
   };
 
-  // Compute bounding box around specific landmark indices, with padding
+  function earRegion(box, side) {
+    const earWidth = box.width * 0.35;
+    const earHeight = box.height * 0.45;
+    return {
+      x: side === 'left' ? box.x - earWidth * 0.8 : box.x + box.width - earWidth * 0.2,
+      y: box.y + box.height * 0.15,
+      w: earWidth,
+      h: earHeight
+    };
+  }
+
+  function foreheadRegion(landmarks, box, browIndices) {
+    const browRegion = regionFromLandmarks(landmarks, browIndices, 0.2);
+    return {
+      x: browRegion.x - browRegion.w * 0.15,
+      y: box.y,
+      w: browRegion.w * 1.3,
+      h: browRegion.y - box.y + browRegion.h * 0.3
+    };
+  }
+
   function regionFromLandmarks(landmarks, indices, padding) {
     const points = landmarks.positions;
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -112,7 +94,6 @@ const ImageCropper = (function () {
     };
   }
 
-  // Load image, optionally downscale
   function loadImage(url) {
     return new Promise((resolve, reject) => {
       const img = new Image();

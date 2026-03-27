@@ -2,6 +2,9 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: "Roboto", sans-serif;
+  font-weight: 400;
+  text-transform: lowercase;
 }
 
 html, body {
@@ -9,7 +12,7 @@ html, body {
   height: 100%;
   overflow: hidden;
   background: #000;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  color: #fff;
 }
 
 /* ── Loading Screen ── */
@@ -23,7 +26,7 @@ html, body {
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  color: #ccc;
+  color: #fff;
   transition: opacity 0.4s ease;
 }
 
@@ -36,14 +39,15 @@ html, body {
 .loading-content h1 {
   font-size: 1.5rem;
   margin-bottom: 1.5rem;
-  font-weight: 300;
+  font-weight: 100;
   letter-spacing: 0.05em;
 }
 
 #loading-status {
   font-size: 0.85rem;
   margin-bottom: 1rem;
-  color: #888;
+  color: #aaa;
+  font-weight: 300;
 }
 
 .loading-bar {
@@ -57,8 +61,54 @@ html, body {
 .loading-bar-fill {
   width: 0%;
   height: 100%;
-  background: #888;
+  background: #fff;
   transition: width 0.3s ease;
+}
+
+/* ── Info Panel ── */
+#info-panel {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease;
+}
+
+.info-content {
+  max-width: 500px;
+  padding: 2rem;
+  text-align: justify;
+}
+
+.info-tags {
+  font-weight: 300;
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-bottom: 1.5rem;
+}
+
+.info-tags a {
+  color: #aaa;
+  text-decoration: none;
+}
+
+.info-tags a:hover {
+  text-decoration: line-through;
+  color: #fff;
+}
+
+.info-description {
+  font-weight: 100;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #fff;
+}
+
+.info-gif {
+  margin-top: 1.5rem;
 }
 
 /* ── AR View ── */
@@ -166,4 +216,90 @@ html, body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* ── Corner UI Icons ── */
+header a, footer a {
+  color: #fff;
+  text-decoration: none;
+  overflow: hidden;
+  background-color: transparent;
+  position: fixed;
+  z-index: 999;
+  font-size: 3rem;
+  line-height: 1;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+header a:hover, footer a:hover {
+  overflow: visible;
+}
+
+#reload { top: 1rem; left: 1rem; }
+#info   { top: 1rem; right: 1rem; }
+#sign   { bottom: 1rem; left: 1rem; overflow: visible; }
+#camera { bottom: 1rem; right: 1rem; }
+
+/* ── "le" Glitch Effect ── */
+#sign .glitch {
+  font-family: sans-serif;
+  position: relative;
+  text-decoration: line-through;
+}
+
+#sign .glitch::before,
+#sign .glitch::after {
+  content: "le";
+  color: white;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  display: none;
+}
+
+#sign:hover .glitch::before {
+  display: block;
+  left: 3px;
+  text-shadow: -2px 0 red;
+  animation: glitch-1 2s linear infinite alternate-reverse;
+}
+
+#sign:hover .glitch::after {
+  display: block;
+  left: -3px;
+  text-shadow: -2px 0 blue;
+  animation: glitch-2 2s linear infinite alternate-reverse;
+}
+
+@keyframes glitch-1 {
+  0%   { clip-path: inset(92% 0 0 0); }
+  10%  { clip-path: inset(80% 0 2% 0); }
+  20%  { clip-path: inset(6% 0 47% 0); }
+  30%  { clip-path: inset(40% 0 55% 0); }
+  40%  { clip-path: inset(20% 0 82% 0); }
+  50%  { clip-path: inset(58% 0 5% 0); }
+  60%  { clip-path: inset(83% 0 32% 0); }
+  70%  { clip-path: inset(87% 0 48% 0); }
+  80%  { clip-path: inset(19% 0 14% 0); }
+  90%  { clip-path: inset(20% 0 59% 0); }
+  100% { clip-path: inset(54% 0 22% 0); }
+}
+
+@keyframes glitch-2 {
+  0%   { clip-path: inset(47% 0 82% 0); }
+  10%  { clip-path: inset(51% 0 6% 0); }
+  20%  { clip-path: inset(33% 0 9% 0); }
+  30%  { clip-path: inset(52% 0 80% 0); }
+  40%  { clip-path: inset(96% 0 40% 0); }
+  50%  { clip-path: inset(90% 0 13% 0); }
+  60%  { clip-path: inset(56% 0 70% 0); }
+  70%  { clip-path: inset(68% 0 49% 0); }
+  80%  { clip-path: inset(92% 0 1% 0); }
+  90%  { clip-path: inset(16% 0 76% 0); }
+  100% { clip-path: inset(62% 0 55% 0); }
 }

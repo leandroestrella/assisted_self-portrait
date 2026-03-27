@@ -119,8 +119,10 @@ const FaceTracker = (function () {
     if (results.faceLandmarks && results.faceLandmarks.length > 0) {
       const vw = videoEl.videoWidth;
       const vh = videoEl.videoHeight;
-      const positions = computePartPositions(results.faceLandmarks[0], vw, vh);
-      if (onTrackCallback) onTrackCallback(positions);
+      const faces = results.faceLandmarks.map(function (lm) {
+        return computePartPositions(lm, vw, vh);
+      });
+      if (onTrackCallback) onTrackCallback(faces);
     } else {
       if (onTrackCallback) onTrackCallback(null);
     }
@@ -148,7 +150,7 @@ const FaceTracker = (function () {
           delegate: 'GPU'
         },
         runningMode: 'VIDEO',
-        numFaces: 1
+        numFaces: 5
       });
 
       _isReady = true;

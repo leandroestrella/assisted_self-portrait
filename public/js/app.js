@@ -21,6 +21,9 @@
   let currentTx = 0;
   let currentTy = 0;
 
+  // Track which face indices are loading images to avoid duplicate fetches
+  const loadingFaces = new Set();
+
   async function startWebcam() {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
@@ -34,7 +37,7 @@
 
   async function loadModelsAndImages(attempt) {
     attempt = attempt || 1;
-    loadingStatus.textContent = 'Loading AI models...';
+    loadingStatus.textContent = 'loading ai models...';
     loadingBarFill.style.width = '0%';
 
     try {
@@ -44,24 +47,24 @@
       console.warn('Cropper init failed:', err);
     }
 
-    loadingStatus.textContent = 'Searching for images...';
+    loadingStatus.textContent = 'searching for images...';
 
     try {
       loadedImages = await ImageSearch.fetchAll((loaded, total) => {
         const pct = 10 + Math.round((loaded / total) * 90);
         loadingBarFill.style.width = pct + '%';
-        loadingStatus.textContent = `Loading images... (${loaded}/${total})`;
+        loadingStatus.textContent = `loading images... (${loaded}/${total})`;
       });
 
       loadingBarFill.style.width = '100%';
-      loadingStatus.textContent = 'Starting camera...';
+      loadingStatus.textContent = 'starting camera...';
     } catch (err) {
       console.error('Image loading error:', err);
       if (attempt >= MAX_LOAD_RETRIES) {
-        loadingStatus.textContent = 'Failed to load images. Please reload.';
+        loadingStatus.textContent = 'failed to load images. please reload.';
         return;
       }
-      loadingStatus.textContent = `Error loading images. Retrying (${attempt}/${MAX_LOAD_RETRIES})...`;
+      loadingStatus.textContent = `error loading images. retrying (${attempt}/${MAX_LOAD_RETRIES})...`;
       await new Promise((r) => setTimeout(r, 2000));
       return loadModelsAndImages(attempt + 1);
     }
@@ -113,10 +116,38 @@
     setTimeout(() => { loadingScreen.style.display = 'none'; }, 400);
   }
 
+  function onFacesDetected(facesArray) {
+    if (!facesArray || facesArray.length === 0) {
+      OverlayManager.update(null);
+      return;
+    }
+
+    // Zoom follows the first face
+    if (facesArray[0] && facesArray[0]._face) {
+      updateZoom(facesArray[0]._face);
+    }
+
+    // Spawn image loading for newly detected faces
+    for (let i = 1; i < facesArray.length; i++) {
+      if (!OverlayManager.hasFaceSet(i) && !loadingFaces.has(i)) {
+        loadingFaces.add(i);
+        const faceIndex = i;
+        ImageSearch.fetchForNewFace().then(function (images) {
+          OverlayManager.addFaceSet(faceIndex, images);
+          loadingFaces.delete(faceIndex);
+        }).catch(function (err) {
+          console.warn('Failed to load images for face ' + faceIndex, err);
+          loadingFaces.delete(faceIndex);
+        });
+      }
+    }
+
+    OverlayManager.update(facesArray);
+  }
+
   async function boot() {
     arView.style.display = 'block';
 
-    // Start webcam immediately (shows behind loader)
     try {
       await startWebcam();
     } catch (err) {
@@ -125,20 +156,15 @@
       return;
     }
 
-    // Load models + images in parallel with webcam
     await loadModelsAndImages();
 
-    // Init overlays
+    // loadModelsAndImages sets loadedImages to null on unrecoverable failure
+    if (!loadedImages) return;
+
     OverlayManager.init(loadedImages, video);
 
-    // Init face tracker (starts detection loop)
     try {
-      await FaceTracker.init(video, function (positions) {
-        if (positions && positions._face) {
-          updateZoom(positions._face);
-        }
-        OverlayManager.update(positions);
-      });
+      await FaceTracker.init(video, onFacesDetected);
     } catch (err) {
       console.error('Face tracker init failed:', err);
     }

@@ -1,12 +1,11 @@
 /**
  * overlayManager.js
  * Creates and positions browser-window overlays for each face part.
- * With MediaPipe, positions come directly from landmark coordinates.
+ * Supports multiple faces — each face gets its own set of overlay elements.
  */
 
 const OverlayManager = (function () {
   const container = () => document.getElementById('overlay-container');
-  const elements = {}; // name -> DOM element
   const TITLE_BAR_HEIGHT = 20;
 
   // Fixed depth order: farthest (lowest z) to closest (highest z)
@@ -22,17 +21,16 @@ const OverlayManager = (function () {
     rightEye: 5
   };
 
-  // Reference to the video element for coordinate mapping
   let videoEl = null;
+  const SMOOTH_FACTOR = 0.5;
 
-  // Smoothing state for each part
-  const smoothState = {};
-  const SMOOTH_FACTOR = 0.5; // 0 = no smoothing, 1 = frozen
+  // Each face set: { elements: {name→DOM}, smoothState: {name→state}, images: {...} }
+  const faceSets = [];
 
-  function createWindowElement(name, imageUrl, title) {
+  function createWindowElement(name, imageUrl, title, faceIndex) {
     const win = document.createElement('div');
     win.className = 'browser-window';
-    win.id = 'part-' + name;
+    win.id = 'part-' + faceIndex + '-' + name;
 
     win.innerHTML = `
       <div class="title-bar">
@@ -45,9 +43,8 @@ const OverlayManager = (function () {
     `;
 
     win.style.display = 'none';
-    win.style.zIndex = (DEPTH_ORDER[name] || 0) + 1;
+    win.style.zIndex = (DEPTH_ORDER[name] || 0) + 1 + faceIndex * 10;
     container().appendChild(win);
-    elements[name] = win;
     return win;
   }
 
@@ -57,31 +54,35 @@ const OverlayManager = (function () {
     return div.innerHTML;
   }
 
-  // Map coordinates from video space to display space
-  // The video is mirrored and may be scaled to cover the viewport
-  function videoToDisplay(vx, vy, vw, vh) {
-    const displayEl = videoEl;
-    const dw = displayEl.clientWidth;
-    const dh = displayEl.clientHeight;
+  function createFaceSet(faceIndex, images) {
+    const elements = {};
+    for (const [name, img] of Object.entries(images)) {
+      elements[name] = createWindowElement(name, img.url, img.title, faceIndex);
+    }
+    const set = { elements: elements, smoothState: {}, images: images };
+    faceSets[faceIndex] = set;
+    return set;
+  }
 
-    // Video covers the display area (object-fit: cover)
+  // Map coordinates from video space to display space
+  function videoToDisplay(vx, vy, vw, vh) {
+    const dw = videoEl.clientWidth;
+    const dh = videoEl.clientHeight;
+
     const videoAspect = vw / vh;
     const displayAspect = dw / dh;
 
     let scale, offsetX, offsetY;
     if (videoAspect > displayAspect) {
-      // Video is wider — height fits, width is cropped
       scale = dh / vh;
       offsetX = (dw - vw * scale) / 2;
       offsetY = 0;
     } else {
-      // Video is taller — width fits, height is cropped
       scale = dw / vw;
       offsetX = 0;
       offsetY = (dh - vh * scale) / 2;
     }
 
-    // Mirror X (video is displayed with scaleX(-1))
     const mirroredX = vw - vx;
 
     return {
@@ -91,9 +92,9 @@ const OverlayManager = (function () {
     };
   }
 
-  function updatePositions(positions) {
+  function updateFaceSet(set, positions) {
     if (!positions || !videoEl) {
-      for (const el of Object.values(elements)) {
+      for (const el of Object.values(set.elements)) {
         el.style.display = 'none';
       }
       return;
@@ -104,12 +105,11 @@ const OverlayManager = (function () {
     if (!vw || !vh) return;
 
     for (const [name, pos] of Object.entries(positions)) {
-      const el = elements[name];
+      const el = set.elements[name];
       if (!el || name === '_face') continue;
 
       el.style.display = 'block';
 
-      // Map from video coords to display coords
       const center = videoToDisplay(pos.x, pos.y, vw, vh);
       const sizeScale = center.scale;
 
@@ -121,11 +121,10 @@ const OverlayManager = (function () {
       const top = center.y - totalHeight / 2;
       const rzDeg = (-pos.rz * 180 / Math.PI);
 
-      // Smooth positions to reduce jitter
-      if (!smoothState[name]) {
-        smoothState[name] = { left, top, width, totalHeight, rzDeg };
+      if (!set.smoothState[name]) {
+        set.smoothState[name] = { left, top, width, totalHeight, rzDeg };
       } else {
-        const s = smoothState[name];
+        const s = set.smoothState[name];
         s.left = s.left * SMOOTH_FACTOR + left * (1 - SMOOTH_FACTOR);
         s.top = s.top * SMOOTH_FACTOR + top * (1 - SMOOTH_FACTOR);
         s.width = s.width * SMOOTH_FACTOR + width * (1 - SMOOTH_FACTOR);
@@ -133,7 +132,7 @@ const OverlayManager = (function () {
         s.rzDeg = s.rzDeg * SMOOTH_FACTOR + rzDeg * (1 - SMOOTH_FACTOR);
       }
 
-      const s = smoothState[name];
+      const s = set.smoothState[name];
 
       el.style.width = s.width + 'px';
       el.style.height = s.totalHeight + 'px';
@@ -143,7 +142,6 @@ const OverlayManager = (function () {
         contentEl.style.height = (s.totalHeight - TITLE_BAR_HEIGHT) + 'px';
       }
 
-      // Translate to center, rotate around center, then offset back
       const cx = s.left + s.width / 2;
       const cy = s.top + s.totalHeight / 2;
       el.style.transform =
@@ -151,17 +149,54 @@ const OverlayManager = (function () {
     }
   }
 
+  function removeFaceSet(faceIndex) {
+    const set = faceSets[faceIndex];
+    if (!set) return;
+    for (const el of Object.values(set.elements)) {
+      if (el.parentNode) el.parentNode.removeChild(el);
+    }
+    faceSets[faceIndex] = null;
+  }
+
   return {
     init(images, video) {
       videoEl = video;
       const c = container();
       c.innerHTML = '';
+      faceSets.length = 0;
+      createFaceSet(0, images);
+    },
 
-      for (const [name, img] of Object.entries(images)) {
-        createWindowElement(name, img.url, img.title);
+    // facesArray: array of position objects, one per detected face, or null
+    update(facesArray) {
+      if (!facesArray) {
+        // Hide all face sets
+        for (const set of faceSets) {
+          if (set) updateFaceSet(set, null);
+        }
+        return;
+      }
+
+      for (let i = 0; i < facesArray.length; i++) {
+        if (faceSets[i]) {
+          updateFaceSet(faceSets[i], facesArray[i]);
+        }
+        // If no face set exists for this index, app.js will handle loading images
+      }
+
+      // Hide face sets beyond the detected count
+      for (let i = facesArray.length; i < faceSets.length; i++) {
+        if (faceSets[i]) updateFaceSet(faceSets[i], null);
       }
     },
 
-    update: updatePositions
+    addFaceSet(faceIndex, images) {
+      if (faceSets[faceIndex]) removeFaceSet(faceIndex);
+      createFaceSet(faceIndex, images);
+    },
+
+    hasFaceSet(faceIndex) {
+      return !!faceSets[faceIndex];
+    }
   };
 })();
