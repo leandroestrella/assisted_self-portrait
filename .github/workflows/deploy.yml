@@ -1,0 +1,20 @@
+# Deploys public/ to cPanel via FTP (static files + PHP API proxies).
+# Triggered on push to main.
+# Requires GitHub Secrets: FTP_SERVER, FTP_USERNAME, FTP_PASSWORD
+name: deploy to cpanel
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: FTP Deploy
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: public/

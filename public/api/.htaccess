@@ -1,0 +1,7 @@
+RewriteEngine On
+
+# Map clean API URLs to PHP scripts
+# /api/search-images?q=... → /api/search-images.php?q=...
+# /api/proxy-image?url=... → /api/proxy-image.php?url=...
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(search-images|proxy-image)$ $1.php [L,QSA]

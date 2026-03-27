@@ -1,5 +1,5 @@
 {
-  "name": "assisted-self-portrait",
+  "name": "assisted_self-portrait",
   "version": "1.0.0",
   "description": "Web AR face filter — overlays found images of facial parts on a live webcam feed",
   "license": "Apache-2.0",

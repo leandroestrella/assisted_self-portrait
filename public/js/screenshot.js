@@ -167,7 +167,6 @@ const Screenshot = (function () {
         ctx.drawImage(img, drawSx, drawSy, drawSw, drawSh, 0, TITLE_BAR_HEIGHT, w, contentH);
       }
 
-      // Border + rounded corners
       ctx.strokeStyle = '#999';
       ctx.lineWidth = 1;
       ctx.strokeRect(0, 0, w, h);
