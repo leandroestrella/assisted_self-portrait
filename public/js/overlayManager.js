@@ -195,6 +195,24 @@ const OverlayManager = (function () {
       createFaceSet(faceIndex, images);
     },
 
+    // Swap images in-place without destroying DOM elements (preserves smooth state)
+    updateImages(faceIndex, images) {
+      const set = faceSets[faceIndex];
+      if (!set) {
+        createFaceSet(faceIndex, images);
+        return;
+      }
+      for (const [name, img] of Object.entries(images)) {
+        const el = set.elements[name];
+        if (!el) continue;
+        const imgEl = el.querySelector('.window-content img');
+        if (imgEl) imgEl.src = img.url;
+        const titleEl = el.querySelector('.title-text');
+        if (titleEl) titleEl.textContent = img.title;
+      }
+      set.images = images;
+    },
+
     hasFaceSet(faceIndex) {
       return !!faceSets[faceIndex];
     }
