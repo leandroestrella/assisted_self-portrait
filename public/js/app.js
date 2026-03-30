@@ -1,17 +1,26 @@
 /**
  * app.js
- * Main orchestration: start webcam, load images, init face tracker, wire up overlays.
+ * Main orchestration: start webcam, init face tracker with default images,
+ * then swap in searched images when they're ready.
  */
 
 (function () {
-  const loadingScreen = document.getElementById('loading-screen');
-  const loadingStatus = document.getElementById('loading-status');
-  const loadingBarFill = document.getElementById('loading-bar-fill');
   const arView = document.getElementById('ar-view');
   const video = document.getElementById('webcam');
   const zoomWrapper = document.getElementById('zoom-wrapper');
 
-  let loadedImages = null;
+  // Bundled face-part images for instant display before search results load
+  const DEFAULT_IMAGES = {
+    leftEye:       { url: 'img/eye-lx.png',      title: 'assisted_self-portrait' },
+    rightEye:      { url: 'img/eye-rx.png',       title: 'assisted_self-portrait' },
+    nose:          { url: 'img/nose.png',          title: 'assisted_self-portrait' },
+    mouth:         { url: 'img/mouth.png',         title: 'assisted_self-portrait' },
+    chin:          { url: 'img/chin.png',          title: 'assisted_self-portrait' },
+    leftEar:       { url: 'img/ear-lx.png',        title: 'assisted_self-portrait' },
+    rightEar:      { url: 'img/ear-rx.png',        title: 'assisted_self-portrait' },
+    leftForehead:  { url: 'img/forehead-lx.png',   title: 'assisted_self-portrait' },
+    rightForehead: { url: 'img/forehead-rx.png',    title: 'assisted_self-portrait' },
+  };
 
   const TARGET_FACE_RATIO = 0.28;
   const MAX_ZOOM = 1.8;
@@ -35,38 +44,27 @@
 
   const MAX_LOAD_RETRIES = 3;
 
-  async function loadModelsAndImages(attempt) {
+  // Runs in background — loads AI models + searches for real portrait images
+  async function loadAndSwapImages(attempt) {
     attempt = attempt || 1;
-    loadingStatus.textContent = 'loading ai models...';
-    loadingBarFill.style.width = '0%';
 
     try {
       await ImageCropper.init();
-      loadingBarFill.style.width = '10%';
     } catch (err) {
       console.warn('Cropper init failed:', err);
     }
 
-    loadingStatus.textContent = 'searching for images...';
-
     try {
-      loadedImages = await ImageSearch.fetchAll((loaded, total) => {
-        const pct = 10 + Math.round((loaded / total) * 90);
-        loadingBarFill.style.width = pct + '%';
-        loadingStatus.textContent = `loading images... (${loaded}/${total})`;
-      });
-
-      loadingBarFill.style.width = '100%';
-      loadingStatus.textContent = 'starting camera...';
+      const images = await ImageSearch.fetchAll(null);
+      // Swap images in-place to preserve window positions and smooth state
+      OverlayManager.updateImages(0, images);
     } catch (err) {
       console.error('Image loading error:', err);
-      if (attempt >= MAX_LOAD_RETRIES) {
-        loadingStatus.textContent = 'failed to load images. please reload.';
-        return;
+      if (attempt < MAX_LOAD_RETRIES) {
+        await new Promise((r) => setTimeout(r, 2000));
+        return loadAndSwapImages(attempt + 1);
       }
-      loadingStatus.textContent = `error loading images. retrying (${attempt}/${MAX_LOAD_RETRIES})...`;
-      await new Promise((r) => setTimeout(r, 2000));
-      return loadModelsAndImages(attempt + 1);
+      // On failure, keep the default images — filter still works
     }
   }
 
@@ -111,11 +109,6 @@
       `translate(${currentTx}px, ${currentTy}px) scale(${currentZoom})`;
   }
 
-  function hideLoader() {
-    loadingScreen.style.opacity = '0';
-    setTimeout(() => { loadingScreen.style.display = 'none'; }, 400);
-  }
-
   function onFacesDetected(facesArray) {
     if (!facesArray || facesArray.length === 0) {
       OverlayManager.update(null);
@@ -156,12 +149,8 @@
       return;
     }
 
-    await loadModelsAndImages();
-
-    // loadModelsAndImages sets loadedImages to null on unrecoverable failure
-    if (!loadedImages) return;
-
-    OverlayManager.init(loadedImages, video);
+    // Start immediately with bundled default images
+    OverlayManager.init(DEFAULT_IMAGES, video);
 
     try {
       await FaceTracker.init(video, onFacesDetected);
@@ -169,7 +158,8 @@
       console.error('Face tracker init failed:', err);
     }
 
-    hideLoader();
+    // Search for real images in the background — swaps them in when ready
+    loadAndSwapImages();
   }
 
   boot();
