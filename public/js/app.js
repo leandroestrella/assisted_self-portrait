@@ -106,8 +106,8 @@
 
     currentZoom = currentZoom * ZOOM_SMOOTH + targetZoom * (1 - ZOOM_SMOOTH);
 
-    const targetTx = -(faceCxNorm - 0.5) * vw * (currentZoom - 1);
-    const targetTy = -(faceCyNorm - 0.5) * vh * (currentZoom - 1);
+    const targetTx = -(faceCxNorm - 0.5) * vw * currentZoom;
+    const targetTy = -(faceCyNorm - 0.5) * vh * currentZoom;
 
     currentTx = currentTx * ZOOM_SMOOTH + targetTx * (1 - ZOOM_SMOOTH);
     currentTy = currentTy * ZOOM_SMOOTH + targetTy * (1 - ZOOM_SMOOTH);

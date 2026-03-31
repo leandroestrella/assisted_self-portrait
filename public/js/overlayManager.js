@@ -22,7 +22,7 @@ const OverlayManager = (function () {
   };
 
   let videoEl = null;
-  const SMOOTH_FACTOR = 0.5;
+  const SMOOTH_FACTOR = 0.8;
 
   // Each face set: { elements: {name→DOM}, smoothState: {name→state}, images: {...} }
   const faceSets = [];

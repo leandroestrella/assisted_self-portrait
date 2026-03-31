@@ -9,7 +9,7 @@ creating a self-portrait using images from the web, with the aid of an anonymous
 ## how it works?
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#000', 'primaryTextColor': '#fff', 'primaryBorderColor': '#fff', 'lineColor': '#fff', 'secondaryColor': '#000', 'tertiaryColor': '#000', 'background': '#000', 'mainBkg': '#000', 'nodeBorder': '#fff', 'clusterBkg': '#000', 'clusterBorder': '#fff', 'titleColor': '#fff', 'edgeLabelBackground': '#000'}}}%%
+%%{init: {'theme': 'base', 'flowchart': {'curve': 'stepBefore'}, 'themeVariables': {'primaryColor': '#000', 'primaryTextColor': '#fff', 'primaryBorderColor': '#fff', 'lineColor': '#fff', 'secondaryColor': '#000', 'tertiaryColor': '#000', 'background': '#000', 'mainBkg': '#000', 'nodeBorder': '#fff', 'clusterBkg': '#000', 'clusterBorder': '#fff', 'titleColor': '#fff', 'edgeLabelBackground': '#000'}}}%%
 flowchart TD
   START[START] --> WEBCAM[CREATE WEBCAM]
   START --> SEARCH[SEARCH IMAGES]
@@ -31,6 +31,16 @@ flowchart TD
 ```
 
 bundled default images are shown instantly while the search + crop pipeline runs in the background. each detected face gets its own unique set of portrait images.
+
+## features
+
+- **instant start**: bundled face-part images display immediately — no loading screen
+- **multi-face**: each detected face (up to 5) gets its own unique set of portrait images
+- **face centering**: webcam auto-zooms and centers on the detected face
+- **screenshot**: capture the ar view with overlays + "le" watermark (desktop download / mobile share)
+- **emoji loader**: cycling 👁👂👃👄 indicator while images load in background
+- **animated favicon**: matching emoji animation in the browser tab
+- **corner ui**: reload, info panel, "le" glitch signature, camera — inspired by [leandroestrella.com](https://www.leandroestrella.com)
 
 ## tech stack
 

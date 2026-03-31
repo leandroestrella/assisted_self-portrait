@@ -205,7 +205,7 @@ header a:hover, footer a:hover {
 
 #emoji-loader::before {
   content: "\01F441";
-  animation: emoji-cycle 1.6s steps(4) infinite;
+  animation: emoji-cycle 3.2s steps(4) infinite;
 }
 
 @keyframes emoji-cycle {
