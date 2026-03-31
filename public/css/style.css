@@ -191,6 +191,30 @@ header a:hover, footer a:hover {
 #sign   { bottom: 1rem; left: 1rem; overflow: visible; }
 #camera { bottom: 1rem; right: 1rem; }
 
+/* ── Emoji Loader ── */
+#emoji-loader {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  font-size: 3rem;
+  line-height: 1;
+  transition: opacity 0.3s ease;
+}
+
+#emoji-loader::before {
+  content: "\01F441";
+  animation: emoji-cycle 1.6s steps(4) infinite;
+}
+
+@keyframes emoji-cycle {
+  0%    { content: "\01F441"; }
+  25%   { content: "\01F442"; }
+  50%   { content: "\01F443"; }
+  75%   { content: "\01F444"; }
+}
+
 /* ── "le" Glitch Effect ── */
 #sign .glitch {
   font-family: sans-serif;
