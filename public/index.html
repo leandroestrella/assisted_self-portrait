@@ -4,7 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>assisted_self-portrait</title>
-  <link rel="icon" href="favicon.ico">
+  <link rel="icon" id="favicon">
+  <script>
+    (function () {
+      const emojis = ['\u{1F441}', '\u{1F442}', '\u{1F443}', '\u{1F444}'];
+      const canvas = document.createElement('canvas');
+      canvas.width = 32;
+      canvas.height = 32;
+      const ctx = canvas.getContext('2d');
+      const link = document.getElementById('favicon');
+      let i = 0;
+      setInterval(function () {
+        ctx.clearRect(0, 0, 32, 32);
+        ctx.font = '28px serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(emojis[i], 16, 18);
+        link.href = canvas.toDataURL('image/png');
+        i = (i + 1) % emojis.length;
+      }, 800);
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
