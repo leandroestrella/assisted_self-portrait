@@ -8,6 +8,7 @@
   const arView = document.getElementById('ar-view');
   const video = document.getElementById('webcam');
   const zoomWrapper = document.getElementById('zoom-wrapper');
+  const emojiLoader = document.getElementById('emoji-loader');
 
   // Bundled face-part images for instant display before search results load
   const DEFAULT_IMAGES = {
@@ -65,6 +66,12 @@
         return loadAndSwapImages(attempt + 1);
       }
       // On failure, keep the default images — filter still works
+    }
+
+    // Hide loader regardless of success or failure
+    if (emojiLoader) {
+      emojiLoader.style.opacity = '0';
+      setTimeout(function () { emojiLoader.style.display = 'none'; }, 300);
     }
   }
 
