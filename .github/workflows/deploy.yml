@@ -1,11 +1,11 @@
 # Deploys public/ to cPanel via FTP (static files + PHP API proxies).
-# Triggered on push to main.
+# Triggered on push to master.
 # Requires GitHub Secrets: FTP_SERVER, FTP_USERNAME, FTP_PASSWORD
 name: deploy to cpanel
 on:
   push:
     branches:
-      - main
+      - master
 jobs:
   deploy:
     runs-on: ubuntu-latest

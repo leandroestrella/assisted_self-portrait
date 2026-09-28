@@ -48,7 +48,7 @@ bundled default images are shown instantly while the search + crop pipeline runs
 - **image cropping**: [face-api.js](https://github.com/justadudewhohacks/face-api.js) (ssd mobilenet + 68-point landmarks)
 - **image search**: duckduckgo image search (server-side proxy)
 - **server**: express (local dev) / php + apache (production)
-- **deploy**: github actions → ftp to cpanel on push to main
+- **deploy**: github actions → ftp to cpanel on push to master
 
 ## setup
 
